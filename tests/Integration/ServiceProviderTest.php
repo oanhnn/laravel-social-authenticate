@@ -28,7 +28,7 @@ class ServiceProviderTest extends TestCase
      */
     public function testItShouldPublishVendorMigrations()
     {
-        $sourceFile = dirname(dirname(__DIR__)) . '/resources/stubs/create_table.stub';
+        $sourceFile = dirname(dirname(__DIR__)) . '/resources/stubs/create-table.stub';
         $targetFile = database_path('migrations/2019_12_05_100000_create_social_credentials_table.php');
 
         $this->assertFileNotExists($targetFile);
@@ -39,7 +39,7 @@ class ServiceProviderTest extends TestCase
         ]);
 
         $this->assertFileExists($targetFile);
-        $this->assertEquals(file_get_contents($sourceFile), file_get_contents($targetFile));
+        $this->assertEquals($this->files->get($sourceFile), $this->files->get($targetFile));
     }
 
     /**

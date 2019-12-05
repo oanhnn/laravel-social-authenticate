@@ -30,8 +30,8 @@ class ServiceProvider extends IlluminateServiceProvider
         // publish vendor resources
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                dirname(__DIR__) . '/resources/stubs/create_table.stub' =>
-                    database_path('migrations/2019_12_05_100000_create_social_credentials_table.php')
+                dirname(__DIR__) . '/resources/stubs/create-table.stub' =>
+                    database_path('migrations/2019_12_05_100000_create_social_credentials_table.php'),
             ], 'laravel-social-credentials');
         }
     }
