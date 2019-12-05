@@ -16,6 +16,8 @@ class CreateSocialCredentialsTable extends Migration
         Schema::create('social_credentials', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->morphs('model');
+            $table->string('provider_id');
+            $table->string('provider_name');
             $table->string('access_token')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->string('refresh_token')->nullable();
@@ -23,11 +25,7 @@ class CreateSocialCredentialsTable extends Migration
             $table->string('email')->nullable();
             $table->string('name')->nullable();
             $table->string('nickname')->nullable();
-            $table->string('provider_id')->nullable();
-            $table->string('provider_name')->nullable();
             $table->timestamps();
-
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
