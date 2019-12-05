@@ -1,0 +1,43 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateSocialCredentialsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('social_credentials', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->morphs('model');
+            $table->string('access_token')->nullable();
+            $table->timestamp('expires_at')->nullable();
+            $table->string('refresh_token')->nullable();
+            $table->string('avatar')->nullable();
+            $table->string('email')->nullable();
+            $table->string('name')->nullable();
+            $table->string('nickname')->nullable();
+            $table->string('provider_id')->nullable();
+            $table->string('provider_name')->nullable();
+            $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('social_credentials');
+    }
+}
