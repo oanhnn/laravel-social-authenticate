@@ -5,93 +5,109 @@ on:
     branches:
       - master
       - develop
+      - feature/*
+      - release/*
+    tags:
+      - "*"
   pull_request:
     branches:
       - master
 
 jobs:
-  test:
+  check-coding-style:
+    name: '[PHP] Check coding style'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Setting up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          tools: phpcs
+      - name: Check coding style
+        run: phpcs --standard=phpcs.xml.dist
+
+  run-tests:
+    name: '[PHP] Test with PHP${{ matrix.php }}, Laravel v${{ matrix.LARAVEL }} and ${{ matrix.dependencies }} dependencies'
     strategy:
       matrix:
         php:
-          - 7.1
           - 7.2
           - 7.3
           - 7.4
         LARAVEL:
-          - 5.5.*
-          - 5.6.*
-          - 5.7.*
-          - 5.8.*
-          - 6.0.*
-          - 6.1.*
-          - 6.2.*
-          - 6.3.*
-          - 6.4.*
-          - 6.5.*
-          - 6.6.*
-        exclude:
-          - php: 7.1
-            LARAVEL: 6.0.*
-          - php: 7.1
-            LARAVEL: 6.1.*
-          - php: 7.1
-            LARAVEL: 6.2.*
-          - php: 7.1
-            LARAVEL: 6.3.*
-          - php: 7.1
-            LARAVEL: 6.4.*
-          - php: 7.1
-            LARAVEL: 6.5.*
-          - php: 7.1
-            LARAVEL: 6.6.*
-
+          - 6.*
+          - 7.*
+          - 8.*
+        dependencies:
+          - highest
+          - lowest
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
-
+        uses: actions/checkout@v2
       - name: Setting up PHP
-        uses: shivammathur/setup-php@v1
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extension-csv: curl, dom, json, mbstring, openssl
-          coverage: xdebug
-          pecl: false
-
-      - name: Check PHP
-        run: |
-          php -v
-          php -m
-          composer -v
-
+          extensions: curl, dom, json, mbstring
+          tools: composer
       - name: Get Composer Cache Directory
         id: composer-cache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
       - name: Cache dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
           restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install composer dependencies
+      - name: Install lowest dependencies with composer
         run: |
           composer require --no-interaction --no-update "illuminate/support:${{ matrix.LARAVEL }}"
-          composer update --no-interaction --no-suggest --prefer-dist $COMPOSER_ARGS
-
-      - name: Check coding style
-        run: php vendor/bin/phpcs --standard=phpcs.xml.dist
-
+          composer update --no-ansi --no-interaction --no-progress --no-suggest --prefer-lowest
+        if: matrix.dependencies == 'lowest'
+      - name: Install highest dependencies with composer
+        run: |
+          composer require --no-interaction --no-update "illuminate/support:${{ matrix.LARAVEL }}"
+          composer update --no-ansi --no-interaction --no-progress --no-suggest
+        if: matrix.dependencies == 'highest'
       - name: Run PHPUnit
-        run: php vendor/bin/phpunit --coverage-clover=build/logs/clover.xml
+        run: php vendor/bin/phpunit
 
-      # - name: Update test coverage
-      #   if: matrix.php == '7.4' && matrix.LARAVEL == '6.6.*'
-      #   run: |
-      #     composer require php-coveralls/php-coveralls
-      #     php vendor/bin/php-coveralls --coverage_clover=build/logs/clover.xml -v
+  update-coverage:
+    name: '[PHP] Update test coverage'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setting up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          extensions: curl, json, mbstring
+          coverage: pcov
+          ini-values: pcov.directory=src
+          tools: composer
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Install dependencies
+        run: composer install --no-interaction --no-suggest --prefer-dist
+      - name: Run PHPUnit and generate coverage
+        run: php -d pcov.enabled=1 vendor/bin/phpunit --coverage-clover=build/logs/clover.xml
+      - name: Update test coverage
+        env:
+          COVERALLS_RUN_LOCALLY: 1
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: |
+          composer require php-coveralls/php-coveralls
+          php vendor/bin/php-coveralls --coverage_clover=build/logs/clover.xml -v
