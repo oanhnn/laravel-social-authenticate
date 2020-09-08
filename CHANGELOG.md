@@ -35,4 +35,4 @@ First release
 
 
 
-[Unreleased]: https://github.com/oanhnn/laravel-social-credentials/compare/v0.1.0...develop
+[Unreleased]: https://github.com/oanhnn/laravel-social-authenticate/compare/v0.1.0...develop

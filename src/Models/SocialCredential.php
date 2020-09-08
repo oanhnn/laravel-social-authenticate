@@ -1,14 +1,14 @@
 <?php
 
-namespace Laravel\SocialCredentials\Models;
+namespace Laravel\SocialAuthenticate\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * Class SocialCredential model
+ * Class Social Credential model
  *
- * @package     Laravel\SocialCredentials\Models
+ * @package     Laravel\SocialAuthenticate\Models
  * @author      Oanh Nguyen <oanhnn.bk@gmail.com>
  * @license     The MIT license
  */
@@ -34,23 +34,27 @@ class SocialCredential extends Model
      * @var array
      */
     protected $fillable = [
-        'access_token',
-        'avatar',
-        'email',
-        'expires_at',
-        'name',
-        'nickname',
         'provider_id',
         'provider_name',
+        'name',
+        'nickname',
+        'email',
+        'avatar',
+        'access_token',
         'refresh_token',
+        'expires_at',
+        'raw',
     ];
 
     /**
-     * The attributes that should be mutated to dates.
+     * The attributes that should be cast to native types.
      *
      * @var array
      */
-    protected $dates = ['expires_at'];
+    protected $casts = [
+        'raw' => 'array',
+        'expires_at' => 'datetime',
+    ];
 
     /**
      * The owner of this cerdential

@@ -1,13 +1,13 @@
 <?php
 
-namespace Laravel\SocialCredentials;
+namespace Laravel\SocialAuthenticate;
 
 use Illuminate\Support\ServiceProvider as IlluminateServiceProvider;
 
 /**
  * Class Service Provider
  *
- * @package     Laravel\SocialCredentials
+ * @package     Laravel\SocialAuthenticate
  * @author      Oanh Nguyen <oanhnn.bk@gmail.com>
  * @license     The MIT license
  */
@@ -23,9 +23,9 @@ class ServiceProvider extends IlluminateServiceProvider
         // publish vendor resources
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                dirname(__DIR__) . '/resources/stubs/create-table.stub' =>
+                dirname(__DIR__) . '/data/stubs/create-table.stub' =>
                     database_path('migrations/2019_12_05_100000_create_social_credentials_table.php'),
-            ], 'laravel-social-credentials');
+            ], 'laravel-social-authenticate');
         }
     }
 }

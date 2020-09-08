@@ -1,14 +1,14 @@
 <?php
 
-namespace Laravel\SocialCredentials;
+namespace Laravel\SocialAuthenticate;
 
-use Laravel\SocialCredentials\Models\SocialCredential;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Laravel\SocialAuthenticate\Models\SocialCredential;
 
 /**
- * Trait has social credentials
+ * Trait HasSocialCredentials for user model
  *
- * @package     Laravel\SocialCredentials
+ * @package     Laravel\SocialAuthenticate
  * @author      Oanh Nguyen <oanhnn.bk@gmail.com>
  * @license     The MIT license
  */
@@ -34,5 +34,31 @@ trait HasSocialCredentials
     public function socialCredentials(): MorphMany
     {
         return $this->morphMany(SocialCredential::class, 'model');
+    }
+
+    /**
+     * Check if the authenticatable instance has a Social account.
+     *
+     * @param  string  $provider
+     * @return bool
+     */
+    public function hasSocialCredential(string $provider): bool
+    {
+        return $this->socialCredentials()
+            ->where('provider_name', $provider)
+            ->exists();
+    }
+
+    /**
+     * Get the social account for a specific provider.
+     *
+     * @param  string  $provider
+     * @return \Laravel\SocialAuthenticate\Models\SocialCredential|null
+     */
+    public function getSocialCredential(string $provider): ?SocialCredential
+    {
+        return $this->socialCredentials()
+            ->where('provider_name', $provider)
+            ->first();
     }
 }
